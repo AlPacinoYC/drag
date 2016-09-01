@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+		<title></title>
+	</head>
+	<style type="text/css">
+		* {
+			padding: 0;
+			margin: 0;
+		}
+		
+		.wrap {
+			height: 100%;
+			width: 100%;
+			overflow: scroll;
+		}
+		
+		.box {
+			height: 12rem;
+			width: 12rem;
+			background-color: #ccc;
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+		
+		.img_bottom {
+			width: 100%;
+			height: auto;
+			display: block;
+			margin: 0 auto;
+		}
+		
+		footer {
+			position: fixed;
+			bottom: 0;
+			width: 100%;
+			height: 3.5rem;
+			box-shadow: 1px 0 1px #ccc;
+			background-color: #eee;
+		}
+		
+		footer .center {
+			display: block;
+			width: 35%;
+			float: left;
+			text-align: center;
+			height: 100%;
+			line-height: 3.5rem;
+			color: black;
+		}
+		
+		footer .zoomIn {
+			display: block;
+			width: 25%;
+			float: left;
+			text-align: center;
+			height: 100%;
+			line-height: 3.5rem;
+			color: black;
+		}
+		
+		footer .zoomOut {
+			display: block;
+			width: 25%;
+			float: left;
+			text-align: center;
+			height: 100%;
+			line-height: 3.5rem;
+			color: black;
+		}
+		footer .reset {
+			display: block;
+			width: 15%;
+			float: left;
+			text-align: center;
+			height: 100%;
+			line-height: 3.5rem;
+			color: black;
+		}
+		footer span:nth-of-type(1) {
+			position: absolute;
+			display: block;
+			height: 100%;
+			width: 2px;
+			left: 35%;
+			top: 0;
+			background-color: #ccc;
+		}
+		
+		footer span:nth-of-type(2) {
+			position: absolute;
+			display: block;
+			height: 100%;
+			width: 2px;
+			left: 60%;
+			top: 0;
+			background-color: #ccc;
+		}
+		footer span:nth-of-type(3) {
+			position: absolute;
+			display: block;
+			height: 100%;
+			width: 2px;
+			left: 85%;
+			top: 0;
+			background-color: #ccc;
+		}
+	</style>
+
+	<body>
+		<div class="wrap">
+			<div class="box">
+			</div>
+			<img src="ad_message.jpg" class="img_bottom" />
+		</div>
+		<footer>
+			<a class="center">中轴对齐/自由对齐</a>
+			<span></span>
+			<a class="zoomOut">放大底图</a>
+			<span></span>
+			<a class="zoomIn">缩小底图</a>
+			<span></span>
+			<a class="reset">重置</a>
+		</footer>
+	</body>
+	<!--<script src="js/zepto.js" type="text/javascript" charset="utf-8"></script>-->
+	<!--<script src="js/jquery-1.11.3.min.js" type="text/javascript" charset="utf-8"></script>-->
+	<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+	<script src="common.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		(function($) {
+			$.fn.box = function() {
+				var self = this;
+				$(this).on("touchstart", function() {
+					$(this).addClass("canDrag")
+				});
+				$(this).on("touchend", function() {
+					$(this).removeClass("canDrag");
+
+				}).on("touchcancel", function() {
+					$(this).removeClass("canDrag");
+					var right = $(this).css('right');
+					var right = right.substring(0, right.length - 2);
+					var left = $(this).css('left');
+					var left = left.substring(0, left.length - 2);
+
+					var top = $(this).css('top');
+					var top = top.substring(0, top.length - 2);
+
+					var bottom = $(this).css('bottom');
+					var bottom = bottom.substring(0, bottom.length - 2);
+
+					if (right < 0) {
+
+						$(this).css('right', "0")
+						$(this).css('left', "auto")
+					}
+					if (left < 0) {
+						$(this).css('left', "0")
+					}
+					if (top < 0) {
+						$(this).css('top', "0")
+					}
+					if (bottom < 0) {
+						$(this).css('bottom', "0")
+						$(this).css('top', "auto")
+					}
+				})
+				var winWid = $(window).width();
+				var winHei = $(window).height();
+				$(".wrap_img").css("height", winHei);
+				var maxLeft = $(window).width() - $(this).width();
+				var maxTop = $(".img_bottom").height() - $(this).height();
+				var isMiddle = false;
+
+				var pLeft = 0;
+				var pTop = 0;
+				$(".wrap").on('touchstart', ".canDrag", function(e) {
+						//兼容Zepto和JQ的写法，兼容Zepto和JQ对event对象的封装不一样
+						e.preventDefault();
+						e.stopPropagation();
+						var evt = e;
+						try {
+							if (evt.originalEvent.targetTouches[0]) {
+								//var touch = evt.touches[0];
+								var touch = evt.originalEvent.targetTouches[0];
+								startX = touch.clientX;
+								startY = touch.clientY;
+								//console.log("jQuery")
+							}
+						} catch (e) {
+							var touch = evt.touches[0];
+							//var touch = evt.originalEvent.targetTouches[0];
+							startX = touch.clientX;
+							startY = touch.clientY;
+							//console.log("Zepto")
+						}
+					}).on('touchmove', ".canDrag", function(e) {
+						e.preventDefault();
+						e.stopPropagation();
+						var $this = $(this);
+						//兼容Zepto和JQ的写法，兼容Zepto和JQ对event对象的封装不一样
+						var evt = e;
+						try {
+							if (evt.originalEvent.targetTouches[0]) {
+								//var touch = evt.touches[0];
+								var touch = evt.originalEvent.targetTouches[0];
+								endX = touch.clientX;
+								endY = touch.clientY;
+								//console.log("jQuery")
+							}
+						} catch (e) {
+							var touch = evt.touches[0];
+							//var touch = evt.originalEvent.targetTouches[0];
+							endX = touch.clientX;
+							endY = touch.clientY;
+							//console.log("Zepto")
+						}
+						//拖动盒子
+						if (isMiddle) {
+							var XNum = $(window).width() / 2 - $(this).width() / 2;
+						} else {
+							var XNum = endX - $(this).width() / 2;
+						}
+						var YNum = endY - $(this).height() / 2 + $(window).scrollTop();
+
+						$(this).css({
+							"left": XNum,
+							"top": YNum
+						})
+
+						var right = $(this).css('right');
+						var right = right.substring(0, right.length - 2);
+
+						var left = $(this).css('left');
+						var left = left.substring(0, left.length - 2);
+
+						var top = $(this).css('top');
+						var top = top.substring(0, top.length - 2);
+
+						var bottom = $(this).css('bottom');
+						var bottom = bottom.substring(0, bottom.length - 2);
+						//设置上下左右边界，不让盒子超出边界
+						if (left > maxLeft) {
+							$(this).css('left', maxLeft + "px");
+						}
+						if (left < 0) {
+							$(this).css('left', "0");
+						}
+						if (top < 0) {
+							$(this).css('top', "0");
+						}
+						if (top > maxTop) {
+							$(this).css('top', maxTop + "px");
+						}
+
+						if (left / winWid < 0) {
+							var pecX = 0;
+						} else {
+							var pecX = left / winWid;
+						}
+
+						if (top / winHei < 0) {
+							var pecY = 0;
+						} else {
+							var pecY = top / winHei;
+						}
+
+					})
+					//事件绑定
+				$(".center").on("click", function(e) {
+					e.preventDefault();
+					e.stopPropagation();
+					isMiddle = !isMiddle;
+					if (isMiddle) {
+						var XNum = $(window).width() / 2 - $(this).width() / 2;
+						$(self).css({
+							"left": XNum
+						})
+					} else {
+                       
+					}
+				});
+
+				$(".zoomIn").on("touchstart", function() {
+					var wid = $(".img_bottom").css("width");
+					var wid = wid.substring(0, wid.length - 2);
+					$(".img_bottom").css("width",wid*0.9+"px");
+				});
+                
+                $(".zoomOut").on("touchstart", function() {
+					var wid = $(".img_bottom").css("width");
+					var wid = wid.substring(0, wid.length - 2);
+					$(".img_bottom").css("width",wid*1.1+"px");
+				});
+                
+                $(".reset").on("touchstart", function() {
+					isMiddle=false;
+					$(".img_bottom").css("width",winWid+"px");
+				});
+			 }
+		})($)
+
+		$(".box").box();
+		
+	</script>
+
+</html>
